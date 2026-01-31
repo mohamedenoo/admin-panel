@@ -3,7 +3,7 @@ import axios from 'axios';
 import { getToken, clearToken } from '../auth';
 
 export const api = axios.create({
-  baseURL: 'http://192.168.1.124:4000/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 });
 
