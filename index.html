@@ -1,28 +1,36 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
   <head>
-
-    <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#101418">
-
+    <!-- ترميز واتساع الشاشة للموبايل -->
     <meta charset="UTF-8" />
-    <!-- مهم جداً للموبايل/التابلت -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
-    <!-- عنوان وعناصر أساسية -->
+    <!-- عنوان ووصف أساسيين -->
     <title>لوحة إدارة الحضور</title>
-    <meta name="theme-color" content="#0f1115" />
+    <meta name="description" content="نظام الحضور والانصراف — لوحة الإدارة وبوابة الموظفين (Web Check‑In)." />
 
-    <!-- أيقونات (اختياري) -->
-    <!-- <link rel="icon" type="image/svg+xml" href="/favicon.svg" /> -->
+    <!-- PWA: ربط الـ Manifest + لون شريط النظام -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#101418" />
 
-    <!-- لو عايز خط عربي اختياري مؤقتاً (تجريبي)
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- PWA: دعم iOS كتطبيق مستقل -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- أيقونة iOS (يمكن استخدام نفس أيقونة 192 كـ fallback) -->
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+    <!-- أيقونات المتصفح (اختياري) -->
+   اري) -->
+    <!--
+    https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap
     -->
   </head>
+
   <body>
     <div id="root"></div>
-    <!-- سكريبتات Vite القياسية -->
-    <script type="module" src="/src/main.jsx"></script>
+
+    <!-- ملف الدخول للواجهة (Vite) -->
+    /src/main.jsx</script>
   </body>
 </html>

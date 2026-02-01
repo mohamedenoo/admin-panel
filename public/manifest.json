@@ -2,6 +2,7 @@
   "name": "Attendance Portal",
   "short_name": "Attendance",
   "start_url": "/emp",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#101418",
   "theme_color": "#101418",
