@@ -1,33 +1,28 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
   <head>
-    <!-- أساسي -->
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#101418">
+
     <meta charset="UTF-8" />
+    <!-- مهم جداً للموبايل/التابلت -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+    <!-- عنوان وعناصر أساسية -->
     <title>لوحة إدارة الحضور</title>
-    <meta name="description" content="نظام الحضور والانصراف — لوحة الإدارة وبوابة الموظفين (Web Check‑In)." />
+    <meta name="theme-color" content="#0f1115" />
 
-    <!-- PWA: Manifest + Theme Color -->
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#101418" />
-
-    <!-- PWA: دعم iOS كتطبيق مستقل -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-
-    <!-- أيقونات المتصفح (اختياري) -->
-    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <!-- أيقونات (اختياري) -->
     <!-- <link rel="icon" type="image/svg+xml" href="/favicon.svg" /> -->
 
-    <!-- خط عربي (اختياري) -->
-    <!-- <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet" /> -->
+    <!-- لو عايز خط عربي اختياري مؤقتاً (تجريبي)
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
+    -->
   </head>
-
   <body>
     <div id="root"></div>
-
-    <!-- ملف الدخول للواجهة (Vite) -->
+    <!-- سكريبتات Vite القياسية -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
