@@ -15,6 +15,9 @@ import EmployeeLogin from './pages/EmployeeLogin';
 import EmployeeCheck from './pages/EmployeeCheck';
 import { isEmpAuthed, getEmpToken } from './authEmployee';
 
+// 👇 زر التثبيت القابل لإعادة الاستخدام
+import InstallButton from './components/InstallButton';
+
 /* =============================
    حمايات الدخول
    ============================= */
@@ -47,35 +50,10 @@ function Layout({ children }) {
    ============================= */
 function Landing() {
   const nav = useNavigate();
-  const [canInstall, setCanInstall] = useState(false);
-  const deferredPromptRef = useRef(null);
 
-  useEffect(() => {
-    function onBeforeInstallPrompt(e) {
-      // منع البانر التلقائي، وخزن الحدث لاستدعائه عند الضغط على الزر
-      e.preventDefault();
-      deferredPromptRef.current = e;
-      setCanInstall(true);
-    }
-    window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
-  }, []);
-
-  async function handleInstall() {
-    try {
-      const promptEvent = deferredPromptRef.current;
-      if (!promptEvent) return;
-      promptEvent.prompt();
-      await promptEvent.userChoice; // { outcome: 'accepted' | 'dismissed' }
-      deferredPromptRef.current = null;
-      setCanInstall(false);
-    } catch (err) {
-      console.error('PWA install prompt failed:', err);
-    }
-  }
-
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isStandaloneIOS = window.navigator.standalone === true;
+  // معلومات بسيطة لمعاينة حالة الجلسة
+  const hasAdmin = !!getToken();
+  const hasEmp   = !!getEmpToken();
 
   return (
     <div
@@ -94,31 +72,29 @@ function Landing() {
           اختر نوع البوابة للدخول
         </p>
 
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: 12,
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            marginBottom: 12
+          }}
+        >
           <button onClick={() => nav('/login')} style={btnPrimary}>لوحة الإدارة</button>
           <button onClick={() => nav('/emp')} style={btn}>بوابة الموظف</button>
         </div>
 
-        {/* زر تثبيت لأندرويد (Chrome) */}
-        {canInstall && !isIOS && (
-          <div style={{ marginTop: 12 }}>
-            <button onClick={handleInstall} style={{ ...btn, background: '#10b981', borderColor: '#10b981' }}>
-              تثبيت التطبيق على الهاتف
-            </button>
-          </div>
-        )}
-
-        {/* تلميحة iOS: لا يوجد beforeinstallprompt */}
-        {isIOS && !isStandaloneIOS && (
-          <div style={{ color: '#9aa4b2', fontSize: 13, marginTop: 12 }}>
-            على iPhone: افتح <b>Safari</b> → اضغط <b>Share</b> → <b>Add to Home Screen</b>
-          </div>
-        )}
+        {/* زر/تعليمات تثبيت التطبيق (PWA) */}
+        <div style={{ marginTop: 12 }}>
+          {/* auto = يظهر زر إن الحدث متاح، وإلا تظهر تلميحات Android/iOS */}
+          <InstallButton variant="auto" />
+        </div>
 
         {/* حالة الجلسة الحالية (اختياري) */}
         <div style={{ marginTop: 18, fontSize: 12, color: '#7e8790' }}>
-          {getToken() ? 'لديك جلسة أدمن فعّالة'
-           : getEmpToken() ? 'لديك جلسة موظف فعّالة'
+          {hasAdmin ? 'لديك جلسة أدمن فعّالة'
+           : hasEmp ? 'لديك جلسة موظف فعّالة'
            : 'لا توجد جلسة فعّالة'}
         </div>
       </div>

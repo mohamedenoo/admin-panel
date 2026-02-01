@@ -15,6 +15,23 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// ✅ إتاحة beforeinstallprompt على مستوى التطبيق:
+window.__deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  // امنع البانر التلقائي وخزّن الحدث للاستعمال عند الضغط على الزر
+  e.preventDefault();
+  window.__deferredInstallPrompt = e;
+  // ابعت إشارة لباقي الواجهة إن الزر بقى مُتاح
+  document.dispatchEvent(new Event('pwa:beforeinstallprompt'));
+});
+
+// لإخفاء زر التثبيت بعد النجاح
+window.addEventListener('appinstalled', () => {
+  window.__deferredInstallPrompt = null;
+  document.dispatchEvent(new Event('pwa:appinstalled'));
+});
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
