@@ -6,20 +6,25 @@ export default function Users() {
   const [users, setUsers] = useState([]);
   const [sites, setSites] = useState([]);
 
-  // إضافة مستخدم
+  // ————— نموذج الإضافة —————
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('employee');
-  const [assignedSites, setAssignedSites] = useState([]);
+  const [assignedSites, setAssignedSites] = useState([]); // IDs كمصفوفة
 
-  // تعديل بيانات
+  // ————— مودال تعديل "البيانات" —————
   const [editOpen, setEditOpen] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editPassword, setEditPassword] = useState('');
   const [editRole, setEditRole] = useState('employee');
+
+  // ————— مودال تعديل "المواقع" —————
+  const [editSitesOpen, setEditSitesOpen] = useState(false);
+  const [editSitesTarget, setEditSitesTarget] = useState(null);
+  const [editSitesSelected, setEditSitesSelected] = useState([]); // IDs
 
   async function loadData() {
     const [usersRes, sitesRes] = await Promise.all([
@@ -30,18 +35,19 @@ export default function Users() {
     setSites(sitesRes.data.items || []);
   }
 
-  // إضافة موظف + ربط مواقع
+  useEffect(() => { loadData(); }, []);
+
+  // ========== إضافة موظف ==========
   async function addUser(e) {
     e.preventDefault();
     try {
       const site_ids = (assignedSites || [])
         .map(String).map(s => s.trim()).filter(Boolean);
 
-      await api.post('/admin/users', {
-        name, email, password, role, site_ids
-      });
+      await api.post('/admin/users', { name, email, password, role, site_ids });
 
-      setName(''); setEmail(''); setPassword(''); setRole('employee'); setAssignedSites([]);
+      setName(''); setEmail(''); setPassword('');
+      setRole('employee'); setAssignedSites([]);
       await loadData();
       alert('✅ تمت إضافة الموظف');
     } catch (err) {
@@ -50,7 +56,12 @@ export default function Users() {
     }
   }
 
-  // تعطيل/تفعيل
+  function handleAddFormSitesChange(e) {
+    const values = Array.from(e.target.selectedOptions).map(o => String(o.value));
+    setAssignedSites(values);
+  }
+
+  // ========== تعطيل/تفعيل ==========
   async function toggleActive(id, isActive) {
     try {
       await api.patch(`/admin/users/${id}`, { is_active: !isActive });
@@ -61,23 +72,7 @@ export default function Users() {
     }
   }
 
-  // تعديل مواقع (prompt سريع)
-  async function updateUserSites(id, site_ids_raw) {
-    try {
-      if (site_ids_raw === null) return;
-      const site_ids = String(site_ids_raw || '')
-        .split(',').map(s => s.trim()).filter(Boolean);
-
-      await api.patch(`/admin/users/${id}`, { site_ids });
-      await loadData();
-      alert('✅ تم تحديث المواقع');
-    } catch (err) {
-      console.error('UPDATE SITES ERROR:', err?.response?.data || err?.message);
-      alert('❌ خطأ في تحديث المواقع');
-    }
-  }
-
-  // فتح نافذة تعديل بيانات
+  // ========== تعديل بيانات (Modal) ==========
   function openEdit(u) {
     setEditTarget(u);
     setEditName(u.name || '');
@@ -88,19 +83,13 @@ export default function Users() {
   }
   function closeEdit() { setEditOpen(false); setEditTarget(null); }
 
-  // حفظ تعديل البيانات
   async function saveEdit(e) {
     e.preventDefault();
     try {
       if (!editTarget) return;
-      const payload = {
-        name: editName,
-        email: editEmail,
-        role: editRole
-      };
-      if (editPassword && editPassword.trim().length > 0) {
-        payload.password = editPassword.trim();
-      }
+      const payload = { name: editName, email: editEmail, role: editRole };
+      if (editPassword && editPassword.trim()) payload.password = editPassword.trim();
+
       await api.patch(`/admin/users/${editTarget.id}`, payload);
       await loadData();
       closeEdit();
@@ -111,11 +100,32 @@ export default function Users() {
     }
   }
 
-  // حذف نهائي (مخفي للأدمِن احترازياً)
+  // ========== تعديل مواقع (Modal) ==========
+  function openEditSites(u) {
+    setEditSitesTarget(u);
+    setEditSitesSelected((u.sites || []).map(s => s.id)); // تعبئة مبدئية
+    setEditSitesOpen(true);
+  }
+
+  async function saveEditSites(e) {
+    e.preventDefault();
+    try {
+      await api.patch(`/admin/users/${editSitesTarget.id}`, { site_ids: editSitesSelected });
+      await loadData();
+      setEditSitesOpen(false);
+      alert('✅ تم تحديث المواقع');
+    } catch (err) {
+      console.error('UPDATE SITES ERROR:', err?.response?.data || err?.message);
+      alert('❌ خطأ في تحديث المواقع');
+    }
+  }
+
+  // ========== حذف نهائي (مخفي للأدمن) ==========
   async function deleteUser(id, nameOrEmail, role) {
-    if (role === 'admin') { return alert('لا يمكن حذف حساب أدمن من الواجهة. عطّل بدلًا من الحذف.'); }
+    if (role === 'admin') return alert('لا يمكن حذف حساب أدمن من الواجهة. عطّل بدلًا من الحذف.');
     const ok = confirm(`هل أنت متأكد من الحذف النهائي؟\n${nameOrEmail}\nلا يمكن التراجع.`);
     if (!ok) return;
+
     try {
       await api.delete(`/admin/users/${id}`);
       await loadData();
@@ -126,18 +136,11 @@ export default function Users() {
     }
   }
 
-  useEffect(() => { loadData(); }, []);
-
-  function handleAddFormSitesChange(e) {
-    const values = Array.from(e.target.selectedOptions).map(o => String(o.value));
-    setAssignedSites(values);
-  }
-
   return (
     <div style={{ padding: 20 }}>
       <h2>إدارة الموظفين</h2>
 
-      {/* نموذج الإضافة */}
+      {/* ——— نموذج الإضافة ——— */}
       <form onSubmit={addUser} style={{ marginBottom: 30, padding: 20, border: '1px solid #ccc', borderRadius: 10 }}>
         <h3>إضافة موظف جديد</h3>
 
@@ -166,7 +169,12 @@ export default function Users() {
 
         <div style={{ marginBottom: 10 }}>
           <label>المواقع المسموح بها:</label>
-          <select multiple style={{ width: '100%', height: 120 }} value={assignedSites} onChange={handleAddFormSitesChange}>
+          <select
+            multiple
+            style={{ width: '100%', height: 120 }}
+            value={assignedSites}
+            onChange={handleAddFormSitesChange}
+          >
             {sites.map(s => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
@@ -179,7 +187,7 @@ export default function Users() {
         <button style={{ padding: 10, width: '100%' }}>إضافة الموظف</button>
       </form>
 
-      {/* جدول الموظفين */}
+      {/* ——— جدول المستخدمين ——— */}
       <h3>قائمة الموظفين</h3>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
@@ -210,16 +218,7 @@ export default function Users() {
                   {u.is_active ? 'تعطيل' : 'تفعيل'}
                 </button>
                 <br /><br />
-                <button
-                  onClick={() =>
-                    updateUserSites(
-                      u.id,
-                      prompt('أدخل IDs المواقع مفصولة بفواصل', (u.sites || []).map(s => s.id).join(','))
-                    )
-                  }
-                >
-                  تعديل مواقع
-                </button>
+                <button onClick={() => openEditSites(u)}>تعديل مواقع</button>
                 <br /><br />
                 <button onClick={() => openEdit(u)}>تعديل بيانات</button>
                 <br /><br />
@@ -237,7 +236,7 @@ export default function Users() {
         </tbody>
       </table>
 
-      {/* نافذة تعديل البيانات */}
+      {/* ——— مودال تعديل البيانات ——— */}
       {editOpen && (
         <div style={modalBackdrop}>
           <div style={modalBox}>
@@ -270,10 +269,41 @@ export default function Users() {
           </div>
         </div>
       )}
+
+      {/* ——— مودال تعديل المواقع ——— */}
+      {editSitesOpen && (
+        <div style={modalBackdrop}>
+          <div style={modalBox}>
+            <h3 style={{ marginTop: 0 }}>تعديل مواقع المستخدم</h3>
+            <form onSubmit={saveEditSites}>
+              <div style={{ marginBottom: 10 }}>
+                <label>المواقع المسموح بها:</label>
+                <select
+                  multiple
+                  style={{ width: '100%', height: 150 }}
+                  value={editSitesSelected}
+                  onChange={e => setEditSitesSelected(
+                    Array.from(e.target.selectedOptions).map(o => o.value)
+                  )}
+                >
+                  {sites.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setEditSitesOpen(false)}>إلغاء</button>
+                <button type="submit">حفظ</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
+// ——— أنماط بسيطة ———
 const th = { border: '1px solid #ccc', padding: 8, textAlign: 'right' };
 const td = { border: '1px solid #ccc', padding: 8, verticalAlign: 'top', textAlign: 'right' };
 
