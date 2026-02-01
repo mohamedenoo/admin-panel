@@ -8,8 +8,8 @@ export default function Login() {
   const nav = useNavigate();
   
   console.log('VITE_API_BASE_URL =', import.meta.env.VITE_API_BASE_URL);
-  const [email, setEmail] = useState('admin@example.com');
-  const [password, setPassword] = useState('Admin@123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   async function handleLogin(e) {
